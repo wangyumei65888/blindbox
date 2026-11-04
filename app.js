@@ -9,6 +9,9 @@
   var $ = function (s) { return document.querySelector(s); };
   var state = null, busy = false;
 
+  /* ---------- 测试模式开关 ---------- */
+  var FREE = /[?&]free=1/.test(location.search);   // 无限次抽（仅测试用）
+
   /* ---------- 云端读写 ---------- */
   function kvRead(cb) {
     var xhr = new XMLHttpRequest();
@@ -62,13 +65,14 @@
 
   /* ---------- 抽奖 ---------- */
   function pickPrize(st) {
-    var pool = [], total = 0;
+    var pool = [];
     var list = st.prizes || st.p || [];
     list.forEach(function (p) {
       var left = (p.stock != null ? p.stock : p.s) - (p.sent || 0);
-      if (left > 0) { pool.push(p); total += 1; }
+      if (left > 0) { pool.push(p); }
     });
-    if (!total) return null;
+    if (!pool.length) return null;
+    // 纯随机：每个人机会均等，与顺序无关
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
@@ -109,22 +113,26 @@
     var finish = playDraw(function () { busy = false; $('#drawBtn').disabled = false; });
     var uid = getUid();
 
-    // 本机已抽过
-    try {
-      var prev = JSON.parse(localStorage.getItem('bx_result') || 'null');
-      if (prev && prev.uid === uid) { finish(prev); return; }
-    } catch (e) {}
+    // 本机已抽过（测试模式跳过）
+    if (!FREE) {
+      try {
+        var prev = JSON.parse(localStorage.getItem('bx_result') || 'null');
+        if (prev && prev.uid === uid) { finish(prev); return; }
+      } catch (e) {}
+    }
 
     kvRead(function (err, st) {
       if (err) { finish({ __error: true, msg: err }); return; }
       var prizes = norm(st);
 
-      // 云端已抽过
+      // 云端已抽过（测试模式跳过）
       var recs = st.records || st.r || [];
-      for (var i = 0; i < recs.length; i++) {
-        if (recs[i].uid === uid) {
-          try { localStorage.setItem('bx_result', JSON.stringify(recs[i])); } catch (e) {}
-          finish(recs[i]); return;
+      if (!FREE) {
+        for (var i = 0; i < recs.length; i++) {
+          if (recs[i].uid === uid) {
+            try { localStorage.setItem('bx_result', JSON.stringify(recs[i])); } catch (e) {}
+            finish(recs[i]); return;
+          }
         }
       }
 
@@ -290,6 +298,15 @@
     }
     render({ prizes: norm(st) });
     var uid = getUid();
+
+    if (FREE) {
+      // 测试模式：每次都当新用户
+      $('#drawBtn').querySelector('.lbl').textContent = '测试：随便抽';
+      var remain0 = norm(st).filter(function (p) { return p.stock - p.sent > 0; }).length;
+      $('#tip').textContent = '【测试模式】还剩 ' + remain0 + ' 份，可无限次抽';
+      return;
+    }
+
     var recs = st.records || st.r || [];
     var mine = null;
     for (var i = 0; i < recs.length; i++) { if (recs[i].uid === uid) { mine = recs[i]; break; } }
