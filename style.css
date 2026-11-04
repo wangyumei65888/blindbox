@@ -224,3 +224,16 @@ body {
   .tile .nm { font-size:9px; height:23px; }
 }
 
+
+/* ===== 隐藏奖品信息模式：格子里只显示"？" ===== */
+.tile .q {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 6px 0;
+  color: #5a63a8;
+  text-shadow: 0 0 10px rgba(120,140,255,.35);
+}
+.tile.gone .q { opacity: 0; }
+.tile:not(.gone):active .q { color: #ffd75e; }
