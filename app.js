@@ -145,7 +145,7 @@
     var bigN = big.length;
     if (bigN > 0) {
       var lo = Math.max(2, Math.round(N * 0.15));
-      var hi = Math.max(lo + 1, N - 1);
+      var hi = Math.max(lo + 1, Math.round(N * 0.90));   // 最贵的奖落在约 90% 处，留几个缓冲
       for (var b = 0; b < bigN; b++) {
         var pos = Math.round(lo + (hi - lo) * (bigN === 1 ? 0.5 : b / (bigN - 1)));
         // 轻微抖动，避免太规律
