@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<title>扫码开盲盒</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg">
+  <i class="glow g1"></i>
+  <i class="glow g2"></i>
+  <i class="grid"></i>
+</div>
+
+<canvas id="fx"></canvas>
+
+<main class="page">
+  <header class="hd">
+    <div class="brand" id="brand">扫码开盲盒</div>
+    <h1 id="headline">50 份好礼 · 随机掉落</h1>
+    <p class="sub" id="subline">微信扫码 · 每人限抽 1 次</p>
+  </header>
+
+  <div class="meter">
+    <div class="meter-bar"><i id="meterFill"></i></div>
+    <div class="meter-txt">剩余 <b id="remainCount">--</b> / <span id="totalCount">--</span> 份</div>
+  </div>
+
+  <section class="wall" id="wall"></section>
+
+  <footer class="cta">
+    <button class="draw-btn" id="drawBtn">
+      <span class="lbl">开启盲盒</span>
+      <span class="shine"></span>
+    </button>
+    <p class="tip" id="tip">点击后 50 份奖品随机开出 1 份</p>
+  </footer>
+</main>
+
+<!-- 抽奖遮罩 -->
+<div class="overlay" id="overlay" aria-hidden="true">
+  <div class="stage">
+    <div class="box" id="box">
+      <div class="box-lid"><span></span></div>
+      <div class="box-body"><div class="ribbon-v"></div></div>
+      <div class="box-glow"></div>
+    </div>
+
+    <div class="flash" id="flash"></div>
+
+    <div class="card" id="card">
+      <div class="card-tier" id="cardTier">特等奖</div>
+      <div class="card-icon" id="cardIcon">🎁</div>
+      <div class="card-name" id="cardName">奖品</div>
+      <div class="card-code" id="cardCode"></div>
+      <div class="card-note" id="cardNote">截图保存，找工作人员兑奖</div>
+      <button class="card-btn" id="cardBtn">收下奖品</button>
+    </div>
+
+    <div class="loading" id="loading"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
