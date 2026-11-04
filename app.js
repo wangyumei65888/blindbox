@@ -133,7 +133,11 @@
       }
       return a;
     }
-    shuffle(big); shuffle(small); shuffle(blank);
+    shuffle(small); shuffle(blank);
+
+    // 大奖按"价值越高越靠后"排列：奖品表里越靠前 = 越贵，所以倒过来放
+    // 这样最贵的奖（免单）落在最后，不会在第 8 位就被抽走
+    big.reverse();
 
     var slots = new Array(N).fill(null);
 
