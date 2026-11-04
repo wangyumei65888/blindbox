@@ -202,11 +202,19 @@
             $('#cardCode').textContent = '';
             note.textContent = payload.msg || '请稍后重试';
           } else if (payload && payload.prizeId) {
-            // 正常中奖（含"谢谢参与"这种安慰奖，也算抽到了东西）
-            $('#cardTier').textContent = payload.tier || '恭喜';
-            $('#cardTier').style.color = payload.color || '#ffd75e';
-            $('#cardTier').style.background = (payload.color || '#ffd75e') + '22';
-            $('#cardTier').style.borderColor = (payload.color || '#ffd75e') + '66';
+            // 正常中奖（含"谢谢参与"，也算抽到了东西）
+            // 只有设置了等级才显示等级标签，其余只显示商品名
+            var tierEl = $('#cardTier');
+            if (payload.tier) {
+              tierEl.textContent = payload.tier;
+              tierEl.style.display = '';
+              tierEl.style.color = payload.color || '#ffd75e';
+              tierEl.style.background = (payload.color || '#ffd75e') + '22';
+              tierEl.style.borderColor = (payload.color || '#ffd75e') + '66';
+            } else {
+              tierEl.textContent = '';
+              tierEl.style.display = 'none';
+            }
             $('#cardIcon').textContent = payload.icon || '🎁';
             $('#cardName').textContent = payload.name;
             $('#cardCode').textContent = payload.code || '';
