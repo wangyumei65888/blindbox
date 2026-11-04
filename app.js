@@ -4,13 +4,15 @@
 
   var KV_BUCKET = 'WYG27VqQxFx6VAMVShxuTv';
   var KV_BASE = 'https://kvdb.io/' + KV_BUCKET;
-  var STATE_KEY = 'bbstate';
 
   var $ = function (s) { return document.querySelector(s); };
   var state = null, busy = false;
 
   /* ---------- 测试模式开关 ---------- */
   var FREE = /[?&]free=1/.test(location.search);   // 无限次抽（仅测试用）
+
+  // 测试模式用独立数据，绝不影响正式奖池
+  var STATE_KEY = FREE ? 'bbstate_test' : 'bbstate';
 
   /* ---------- 云端读写 ---------- */
   function kvRead(cb) {
@@ -325,19 +327,34 @@
     $('#card').classList.remove('show');
   });
 
-  $('#tip').textContent = '正在读取奖池...';
-  kvRead(function (err, st) {
-    if (err) {
-      $('#tip').textContent = '读取失败: ' + err;
-      return;
-    }
+  // 测试池首次使用时，从正式奖池复制一份结构（全部 sent=0），不动正式数据
+  function initTestPool(cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', KV_BASE + '/bbstate?t=' + Date.now(), true);
+    xhr.timeout = 20000;
+    xhr.onload = function () {
+      if (xhr.status !== 200) { cb('无法读取正式奖池'); return; }
+      try {
+        var base = JSON.parse(xhr.responseText);
+        var prizes = norm(base).map(function (p) {
+          return { id: p.id, name: p.name, icon: p.icon, tier: p.tier, color: p.color, stock: p.stock, sent: 0 };
+        });
+        var st = { prizes: prizes, records: [], updated: new Date().toISOString() };
+        kvWrite(st, function (e) { cb(e, st); });
+      } catch (e) { cb('解析正式奖池失败'); }
+    };
+    xhr.onerror = function () { cb('网络错误'); };
+    xhr.ontimeout = function () { cb('超时'); };
+    xhr.send();
+  }
+
+  function onLoaded(st) {
     render({ prizes: norm(st) });
     var uid = getUid();
 
     if (FREE) {
-      // 测试模式：每次都当新用户
       $('#drawBtn').querySelector('.lbl').textContent = '测试：随便抽';
-      $('#tip').textContent = '【测试模式】剩余 ' + remainUnits(norm(st)) + ' 份，可无限次抽';
+      $('#tip').textContent = '【测试模式·独立数据】剩余 ' + remainUnits(norm(st)) + ' 份，可无限次抽';
       return;
     }
 
@@ -351,5 +368,18 @@
       try { localStorage.removeItem('bx_result'); } catch (e) {}
       $('#tip').textContent = '剩余 ' + remainUnits(norm(st)) + ' 份，点击开盒';
     }
+  }
+
+  $('#tip').textContent = '正在读取奖池...';
+  kvRead(function (err, st) {
+    if (err === 'EMPTY' && FREE) {
+      initTestPool(function (e2, st2) {
+        if (e2) { $('#tip').textContent = '测试池初始化失败：' + e2; return; }
+        onLoaded(st2);
+      });
+      return;
+    }
+    if (err) { $('#tip').textContent = '读取失败: ' + err; return; }
+    onLoaded(st);
   });
 })();
