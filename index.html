@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="format-detection" content="telephone=no">
 <title>扫码开盲盒</title>
-<link rel="stylesheet" href="style.css?v=639294362554788842">
+
 </head>
 <body>
 
@@ -67,6 +67,16 @@
   </div>
 </div>
 
-<script src="app.js?v=639294362554788842"></script>
+<script>
+(function(){
+  var v = Date.now();
+  var css = document.createElement('link');
+  css.rel = 'stylesheet'; css.href = 'style.css?v=' + v;
+  document.head.appendChild(css);
+  var js = document.createElement('script');
+  js.src = 'app.js?v=' + v;
+  document.body.appendChild(js);
+})();
+</script>
 </body>
 </html>
