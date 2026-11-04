@@ -1,0 +1,225 @@
+/* ============ 基础 ============ */
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { height:100%; }
+body {
+  background:#07080f;
+  color:#eef1ff;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ============ 背景 ============ */
+.bg { position:fixed; inset:0; z-index:0; overflow:hidden; background:radial-gradient(120% 80% at 50% 0%, #171a3a 0%, #0a0b16 45%, #05060c 100%); }
+.bg .glow { position:absolute; border-radius:50%; filter:blur(70px); opacity:.55; }
+.bg .g1 { width:340px; height:340px; left:-90px; top:-60px; background:#5b3df5; animation:float1 14s ease-in-out infinite; }
+.bg .g2 { width:300px; height:300px; right:-100px; top:220px; background:#e0447a; opacity:.42; animation:float2 16s ease-in-out infinite; }
+.bg .grid {
+  position:absolute; inset:0;
+  background-image:linear-gradient(rgba(120,140,255,.055) 1px, transparent 1px),
+                   linear-gradient(90deg, rgba(120,140,255,.055) 1px, transparent 1px);
+  background-size:34px 34px;
+  mask-image:radial-gradient(circle at 50% 20%, #000 0%, transparent 72%);
+  -webkit-mask-image:radial-gradient(circle at 50% 20%, #000 0%, transparent 72%);
+}
+@keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,50px)} }
+@keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-40px,-40px)} }
+
+#fx { position:fixed; inset:0; z-index:60; pointer-events:none; }
+
+/* ============ 布局 ============ */
+.page { position:relative; z-index:2; max-width:520px; margin:0 auto; padding:26px 18px 130px; }
+
+.hd { text-align:center; }
+.brand {
+  display:inline-block; font-size:12px; letter-spacing:.28em; padding:6px 14px;
+  border:1px solid rgba(140,160,255,.34); border-radius:999px;
+  color:#a9b6ff; background:rgba(90,110,255,.10); margin-bottom:16px;
+}
+.hd h1 {
+  font-size:27px; line-height:1.3; font-weight:800; letter-spacing:.02em;
+  background:linear-gradient(100deg,#fff 0%,#b9c4ff 45%,#f2a6c4 100%);
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+}
+.hd .sub { margin-top:9px; font-size:12.5px; color:#7c86b5; letter-spacing:.04em; }
+
+/* ============ 进度条 ============ */
+.meter { margin:20px 0 14px; }
+.meter-bar { height:6px; border-radius:99px; background:rgba(255,255,255,.07); overflow:hidden; }
+.meter-bar i {
+  display:block; height:100%; width:100%; border-radius:99px;
+  background:linear-gradient(90deg,#6d5bff,#e0447a,#ffb35c);
+  transition:width .5s cubic-bezier(.2,.8,.3,1);
+}
+.meter-txt { margin-top:8px; font-size:12px; color:#8b94c2; text-align:right; }
+.meter-txt b { color:#fff; font-size:14px; }
+
+/* ============ 奖品墙 ============ */
+.wall {
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px;
+  margin-top:6px;
+}
+.tile {
+  position:relative; border-radius:14px; padding:11px 6px 9px;
+  background:linear-gradient(160deg, rgba(38,44,86,.95), rgba(22,26,54,.95));
+  border:1px solid rgba(120,140,255,.15);
+  text-align:center; overflow:hidden; min-width:0;
+  transition:transform .25s, opacity .3s, border-color .3s;
+}
+.tile::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(160deg, rgba(255,255,255,.055), transparent 55%);
+  pointer-events:none;
+}
+.tile .ic { font-size:19px; line-height:1; display:block; filter:saturate(1.1); }
+.tile .nm {
+  margin-top:6px; font-size:9.5px; line-height:1.28; color:#b9c2ec;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; height:24px;
+  word-break:break-word;
+}
+.tile .tk { position:absolute; top:4px; right:5px; width:5px; height:5px; border-radius:50%; opacity:.9; }
+.tile.gone { opacity:.28; filter:grayscale(1); }
+.tile.gone::before {
+  content:'已开'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:11px; color:#fff; background:rgba(0,0,0,.42); letter-spacing:.1em; z-index:2;
+}
+.tile.win {
+  border-color:#ffd75e; box-shadow:0 0 0 1px rgba(255,215,94,.55), 0 6px 22px rgba(255,190,60,.28);
+  animation:winPulse 1.6s ease-in-out infinite;
+}
+@keyframes winPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.045)} }
+
+/* ============ 按钮 ============ */
+.cta { position:fixed; left:0; right:0; bottom:0; z-index:20; padding:14px 18px calc(18px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top, rgba(7,8,15,.98) 45%, rgba(7,8,15,0)); }
+.draw-btn {
+  position:relative; display:block; width:100%; max-width:484px; margin:0 auto;
+  height:56px; border:none; border-radius:18px; cursor:pointer;
+  font-size:17px; font-weight:800; letter-spacing:.06em; color:#1a1035;
+  background:linear-gradient(100deg,#ffd75e,#ff9f68 45%,#ff6fa5 100%);
+  box-shadow:0 10px 30px rgba(255,130,160,.34), inset 0 1px 0 rgba(255,255,255,.55);
+  overflow:hidden; transition:transform .16s, box-shadow .2s;
+}
+.draw-btn:active { transform:scale(.975); }
+.draw-btn[disabled] { opacity:.55; cursor:default; }
+.draw-btn .lbl { position:relative; z-index:2; }
+.draw-btn .shine {
+  position:absolute; top:0; left:-60%; width:45%; height:100%;
+  background:linear-gradient(100deg, transparent, rgba(255,255,255,.65), transparent);
+  transform:skewX(-18deg); animation:shine 2.8s ease-in-out infinite;
+}
+@keyframes shine { 0%{left:-60%} 55%,100%{left:135%} }
+.tip { text-align:center; margin-top:10px; font-size:11.5px; color:#6d76a3; min-height:16px; }
+
+/* ============ 遮罩 / 盲盒动画 ============ */
+.overlay {
+  position:fixed; inset:0; z-index:50; display:none;
+  align-items:center; justify-content:center;
+  background:radial-gradient(circle at 50% 45%, rgba(40,32,90,.96), rgba(5,6,12,.985) 65%);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+}
+.overlay.show { display:flex; }
+.stage { position:relative; width:100%; max-width:360px; height:430px; display:flex; align-items:center; justify-content:center; }
+
+/* 盒子 */
+.box { position:relative; width:132px; height:126px; }
+.box-lid {
+  position:absolute; top:0; left:-6px; width:144px; height:34px; border-radius:8px;
+  background:linear-gradient(180deg,#7c5cff,#4b34c9);
+  box-shadow:0 6px 18px rgba(80,60,220,.5), inset 0 1px 0 rgba(255,255,255,.4);
+  transform-origin:50% 100%;
+}
+.box-lid span {
+  position:absolute; left:50%; top:0; width:16px; height:100%; margin-left:-8px;
+  background:linear-gradient(180deg,#ffd75e,#ffab2e);
+}
+.box-body {
+  position:absolute; bottom:0; left:0; width:132px; height:96px; border-radius:0 0 12px 12px;
+  background:linear-gradient(180deg,#5a41dd,#33238f);
+  box-shadow:inset 0 6px 16px rgba(0,0,0,.35), 0 14px 34px rgba(60,40,180,.42);
+}
+.ribbon-v {
+  position:absolute; left:50%; top:0; width:16px; height:100%; margin-left:-8px;
+  background:linear-gradient(180deg,#ffd75e,#ffab2e);
+  opacity:.95;
+}
+.box-glow {
+  position:absolute; inset:-30% -40%; border-radius:50%;
+  background:radial-gradient(circle, rgba(255,210,110,.55), transparent 62%);
+  opacity:0; transition:opacity .35s;
+}
+.box.shake { animation:shake .62s cubic-bezier(.36,.07,.19,.97) infinite; }
+@keyframes shake {
+  0%,100%{transform:translate(0,0) rotate(0)}
+  15%{transform:translate(-7px,2px) rotate(-4deg)}
+  30%{transform:translate(6px,-3px) rotate(4deg)}
+  45%{transform:translate(-5px,1px) rotate(-3deg)}
+  60%{transform:translate(5px,2px) rotate(3deg)}
+  75%{transform:translate(-3px,-1px) rotate(-2deg)}
+}
+.box.open .box-lid { animation:lidOpen .7s cubic-bezier(.2,.9,.3,1) forwards; }
+@keyframes lidOpen {
+  0%{transform:translateY(0) rotate(0)}
+  100%{transform:translateY(-96px) rotate(-26deg); opacity:0}
+}
+.box.open .box-glow { opacity:1; }
+
+.flash {
+  position:absolute; width:10px; height:10px; border-radius:50%; opacity:0;
+  background:radial-gradient(circle,#fff 0%,rgba(255,225,150,.9) 30%,transparent 70%);
+  pointer-events:none;
+}
+.flash.go { animation:flashOut .75s ease-out forwards; }
+@keyframes flashOut {
+  0%{opacity:1; transform:scale(1)}
+  100%{opacity:0; transform:scale(90)}
+}
+
+/* 结果卡 */
+.card {
+  position:absolute; width:250px; padding:22px 18px 18px; border-radius:22px; text-align:center;
+  background:linear-gradient(165deg, rgba(46,40,96,.98), rgba(20,18,44,.99));
+  border:1px solid rgba(160,150,255,.32);
+  box-shadow:0 24px 60px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.14);
+  opacity:0; transform:scale(.6) translateY(20px); pointer-events:none;
+}
+.card.show { animation:cardIn .62s cubic-bezier(.16,1.1,.3,1) forwards; pointer-events:auto; }
+@keyframes cardIn { to { opacity:1; transform:scale(1) translateY(0); } }
+
+.card-tier {
+  display:inline-block; font-size:11px; letter-spacing:.16em; padding:4px 11px; border-radius:99px;
+  background:rgba(255,215,94,.16); color:#ffd75e; border:1px solid rgba(255,215,94,.4);
+}
+.card-icon { font-size:56px; line-height:1; margin:14px 0 8px; animation:pop .8s ease; }
+@keyframes pop { 0%{transform:scale(.3) rotate(-14deg)} 62%{transform:scale(1.16) rotate(5deg)} 100%{transform:scale(1) rotate(0)} }
+.card-name { font-size:19px; font-weight:800; color:#fff; line-height:1.3; }
+.card-code {
+  margin-top:11px; display:inline-block; font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:13px; letter-spacing:.18em; color:#ffd75e;
+  padding:4px 12px; border-radius:8px; background:rgba(255,215,94,.10);
+  border:1px dashed rgba(255,215,94,.45);
+}
+.card-code:empty { display:none; }
+.card-note { margin-top:9px; font-size:11.5px; color:#9aa3d0; line-height:1.5; }
+.card-btn {
+  margin-top:16px; width:100%; height:42px; border:none; border-radius:12px; cursor:pointer;
+  font-size:14px; font-weight:700; color:#231442;
+  background:linear-gradient(100deg,#ffd75e,#ffab6a); letter-spacing:.04em;
+}
+.card-btn:active { transform:scale(.97); }
+
+/* loading */
+.loading { position:absolute; display:none; gap:9px; }
+.loading.show { display:flex; }
+.loading span { width:9px; height:9px; border-radius:50%; background:#9b8cff; animation:blink 1s infinite; }
+.loading span:nth-child(2) { animation-delay:.16s; }
+.loading span:nth-child(3) { animation-delay:.32s; }
+@keyframes blink { 0%,100%{opacity:.25; transform:translateY(0)} 50%{opacity:1; transform:translateY(-6px)} }
+
+@media (max-width:400px) {
+  .hd h1 { font-size:23px; }
+  .wall { gap:6px; }
+  .tile { padding:9px 4px 7px; border-radius:12px; }
+  .tile .ic { font-size:17px; }
+  .tile .nm { font-size:9px; height:23px; }
+}
