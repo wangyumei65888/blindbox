@@ -106,6 +106,13 @@
     return u;
   }
 
+  // 剩余总份数（按份数算，不是按种类数）
+  function remainUnits(prizes) {
+    var n = 0;
+    (prizes || []).forEach(function (p) { n += Math.max(0, (p.stock || 0) - (p.sent || 0)); });
+    return n;
+  }
+
   function doDraw() {
     if (busy) return;
     busy = true;
@@ -330,8 +337,7 @@
     if (FREE) {
       // 测试模式：每次都当新用户
       $('#drawBtn').querySelector('.lbl').textContent = '测试：随便抽';
-      var remain0 = norm(st).filter(function (p) { return p.stock - p.sent > 0; }).length;
-      $('#tip').textContent = '【测试模式】还剩 ' + remain0 + ' 份，可无限次抽';
+      $('#tip').textContent = '【测试模式】剩余 ' + remainUnits(norm(st)) + ' 份，可无限次抽';
       return;
     }
 
@@ -343,8 +349,7 @@
       $('#tip').textContent = '你已抽过：' + mine.name;
     } else {
       try { localStorage.removeItem('bx_result'); } catch (e) {}
-      var remain = norm(st).filter(function (p) { return p.stock - p.sent > 0; }).length;
-      $('#tip').textContent = '还剩 ' + remain + ' 份，点击开盒';
+      $('#tip').textContent = '剩余 ' + remainUnits(norm(st)) + ' 份，点击开盒';
     }
   });
 })();
