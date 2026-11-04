@@ -202,12 +202,17 @@
             $('#cardCode').textContent = '';
             note.textContent = payload.msg || '请稍后重试';
           } else if (payload && payload.prizeId) {
+            // 正常中奖（含"谢谢参与"这种安慰奖，也算抽到了东西）
             $('#cardTier').textContent = payload.tier || '恭喜';
             $('#cardTier').style.color = payload.color || '#ffd75e';
+            $('#cardTier').style.background = (payload.color || '#ffd75e') + '22';
+            $('#cardTier').style.borderColor = (payload.color || '#ffd75e') + '66';
             $('#cardIcon').textContent = payload.icon || '🎁';
             $('#cardName').textContent = payload.name;
             $('#cardCode').textContent = payload.code || '';
-            note.textContent = '截图保存，找工作人员兑奖';
+            note.textContent = payload.name === '谢谢参与'
+              ? '别灰心，下次好运～'
+              : '截图保存，找工作人员兑奖';
           } else {
             $('#cardTier').textContent = '未中奖';
             $('#cardTier').style.color = '#94a3b8';
