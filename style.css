@@ -80,7 +80,7 @@ body {
 .tile .tk { position:absolute; top:4px; right:5px; width:5px; height:5px; border-radius:50%; opacity:.9; }
 .tile.gone { opacity:.28; filter:grayscale(1); }
 .tile.gone::before {
-  content:'已开'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  content:'已抽'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
   font-size:11px; color:#fff; background:rgba(0,0,0,.42); letter-spacing:.1em; z-index:2;
 }
 .tile.win {
@@ -224,13 +224,3 @@ body {
   .tile .nm { font-size:9px; height:23px; }
 }
 
-/* 奖品剩余份数角标 */
-.tile .cnt {
-  position: absolute; top: 4px; left: 6px;
-  font-size: 10px; font-weight: 700; line-height: 1;
-  color: #0b0d18; background: #ffd75e;
-  padding: 2px 5px; border-radius: 6px;
-  min-width: 16px; text-align: center;
-  z-index: 3;
-}
-.tile.gone .cnt { background: #64748b; color: #d7dbe8; }
