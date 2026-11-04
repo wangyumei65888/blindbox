@@ -28,10 +28,13 @@
     { id: 10, name: '谢谢参与',          icon: '🎈', tier: '',       color: '#94a3b8', stock: 20 }
   ];
   function freshPool() {
+    var ps = DEFAULT_PRIZES.map(function (p) {
+      return { id: p.id, name: p.name, icon: p.icon, tier: p.tier, color: p.color, stock: p.stock, sent: 0 };
+    });
     return {
-      prizes: DEFAULT_PRIZES.map(function (p) {
-        return { id: p.id, name: p.name, icon: p.icon, tier: p.tier, color: p.color, stock: p.stock, sent: 0 };
-      }),
+      prizes: ps,
+      seq: buildSequence(ps),      // 预设顺序：抽奖按这个顺序走
+      cursor: 0,
       records: [],
       updated: new Date().toISOString()
     };
@@ -101,6 +104,110 @@
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
+  /* ---------- 预设顺序：把 50 个位置提前排好，大奖分散开 ----------
+     规则：
+       1. 带等级的"大奖"排在整场的中后段，彼此间隔至少 6 位，绝不扎堆在前几名
+       2. 红包/零食等其他奖品均匀穿插
+       3. "谢谢参与"填满剩余位置，且连续不超过 2 个
+  */
+  function buildSequence(prizes) {
+    var N = 0;
+    prizes.forEach(function (p) { N += (p.stock || 0); });
+    if (!N) return [];
+
+    var big = [], small = [], blank = [];
+    prizes.forEach(function (p) {
+      var n = p.stock || 0;
+      for (var i = 0; i < n; i++) {
+        if (p.name === '谢谢参与') blank.push(p.id);
+        else if (p.tier) big.push(p.id);      // 有等级 = 大奖
+        else small.push(p.id);                 // 红包/零食
+      }
+    });
+
+    // 洗牌助手
+    function shuffle(a) {
+      for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+      return a;
+    }
+    shuffle(big); shuffle(small); shuffle(blank);
+
+    var slots = new Array(N).fill(null);
+
+    // --- 1) 大奖：均匀铺在 15%~95% 区间，彼此至少隔 6 位 ---
+    var bigN = big.length;
+    if (bigN > 0) {
+      var lo = Math.max(2, Math.round(N * 0.15));
+      var hi = Math.max(lo + 1, N - 1);
+      for (var b = 0; b < bigN; b++) {
+        var pos = Math.round(lo + (hi - lo) * (bigN === 1 ? 0.5 : b / (bigN - 1)));
+        // 轻微抖动，避免太规律
+        if (Math.random() < 0.5) pos += (Math.random() < 0.5 ? -1 : 1);
+        pos = Math.max(0, Math.min(N - 1, pos));
+        // 找最近的空位，并保证与已放大奖至少隔 6 位
+        var placed = false;
+        for (var d = 0; d < N && !placed; d++) {
+          var cands = [pos + d, pos - d];
+          for (var ci = 0; ci < cands.length; ci++) {
+            var c = cands[ci];
+            if (c < 0 || c >= N || slots[c] !== null) continue;
+            var ok = true;
+            for (var k = Math.max(0, c - 5); k <= Math.min(N - 1, c + 5); k++) {
+              if (slots[k] !== null) { ok = false; break; }
+            }
+            if (ok) { slots[c] = big[b]; placed = true; break; }
+          }
+        }
+        if (!placed) {                       // 兜底：随便找个空位
+          for (var z = 0; z < N; z++) if (slots[z] === null) { slots[z] = big[b]; break; }
+        }
+      }
+    }
+
+    // --- 2) 剩余位置：小奖与"谢谢参与"按比例穿插，连续谢谢不超过 2 ---
+    var free = [];
+    for (var f = 0; f < N; f++) if (slots[f] === null) free.push(f);
+
+    var out = [], si = 0, bi2 = 0;
+    var maxBlank = 2;                        // 最多连续 2 个谢谢参与
+    var runBlank = 0;
+    for (var r = 0; r < free.length; r++) {
+      var needSmall = small.length - si;
+      var needBlank = blank.length - bi2;
+      var takeSmall;
+      if (needSmall <= 0) takeSmall = false;
+      else if (needBlank <= 0) takeSmall = true;
+      else if (runBlank >= maxBlank) takeSmall = true;          // 该插奖品了
+      else takeSmall = (needSmall / (needSmall + needBlank)) > Math.random();
+      if (takeSmall) { out.push(small[si++]); runBlank = 0; }
+      else { out.push(blank[bi2++]); runBlank++; }
+    }
+    // 万一还有剩（理论上不会）
+    while (si < small.length) out.push(small[si++]);
+    while (bi2 < blank.length) out.push(blank[bi2++]);
+
+    for (var q = 0; q < free.length; q++) slots[free[q]] = out[q];
+    return slots;
+  }
+
+  // 按预设顺序取下一个奖品
+  function pickBySequence(st, prizes) {
+    var seq = st.seq;
+    if (!seq || !seq.length) return pickPrize({ prizes: prizes });   // 无序列时退回随机
+    var cur = st.cursor || 0;
+    while (cur < seq.length) {
+      var id = seq[cur];
+      var pz = null;
+      for (var i = 0; i < prizes.length; i++) if (prizes[i].id === id) pz = prizes[i];
+      if (pz && (pz.stock || 0) - (pz.sent || 0) > 0) return pz;
+      cur++;                                  // 该位已无货，跳过
+    }
+    return null;
+  }
+
   function norm(st) {
     // 兼容 kvdb 返回的简写字段
     var list = st.prizes || st.p || [];
@@ -168,7 +275,8 @@
         }
       }
 
-      var p = pickPrize({ prizes: prizes });
+      // 按预设顺序抽（保证大奖分散，不会扎堆在前面）
+      var p = pickBySequence(st, prizes);
       var rec = {
         uid: uid,
         code: genCode(uid),
@@ -187,6 +295,8 @@
       }
       var newState = {
         prizes: prizes,
+        seq: st.seq || null,                     // 保留预设顺序
+        cursor: (st.cursor || 0) + 1,            // 顺序指针前进一位
         records: recs.concat([rec]),
         updated: new Date().toISOString()
       };
