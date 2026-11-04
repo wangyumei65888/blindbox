@@ -486,10 +486,34 @@
     }
   }
 
+  // 测试池初始化：复用正式池的序列，保证"测什么，正式就是什么"
+  function initTestFromOfficial() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', KV_BASE + '/bbstate?t=' + Date.now(), true);
+    xhr.timeout = 20000;
+    function done(base) {
+      var pool = freshPool();
+      if (base && base.seq && base.seq.length) { pool.seq = base.seq.slice(); }
+      kvWrite(pool, function (e2) {
+        if (e2) { $('#tip').textContent = '测试池初始化失败：' + e2; return; }
+        onLoaded(pool);
+      });
+    }
+    xhr.onload = function () {
+      var base = null;
+      try { base = JSON.parse(xhr.responseText); } catch (e) {}
+      done(base);
+    };
+    xhr.onerror = function () { done(null); };
+    xhr.ontimeout = function () { done(null); };
+    xhr.send();
+  }
+
   $('#tip').textContent = '正在读取奖池...';
   kvRead(function (err, st) {
-    // 云端数据不存在（过期/被清空）→ 用内置奖池自动重建，活动不中断
+    // 云端数据不存在（过期/被清空）→ 自动重建，活动不中断
     if (err === 'EMPTY') {
+      if (FREE) { initTestFromOfficial(); return; }
       var fresh = freshPool();
       kvWrite(fresh, function (e2) {
         if (e2) { $('#tip').textContent = '奖池初始化失败：' + e2; return; }
