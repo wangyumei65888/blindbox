@@ -34,18 +34,30 @@
     xhr.send();
   }
 
+  // kvdb 的 POST 不覆盖旧值，必须先 DELETE 再 POST
   function kvWrite(obj, cb) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', KV_BASE + '/' + STATE_KEY, true);
-    xhr.setRequestHeader('Content-Type', 'text/plain');
-    xhr.timeout = 25000;
-    xhr.onload = function () {
-      if (xhr.status === 200 || xhr.status === 201) { cb(null); }
-      else { cb('HTTP ' + xhr.status); }
-    };
-    xhr.onerror = function () { cb('网络错误'); };
-    xhr.ontimeout = function () { cb('超时'); };
-    xhr.send(JSON.stringify(obj));
+    var url = KV_BASE + '/' + STATE_KEY;
+    var del = new XMLHttpRequest();
+    del.open('DELETE', url, true);
+    del.timeout = 20000;
+    del.onload = function () { doPost(); };
+    del.onerror = function () { doPost(); };   // 删失败也继续尝试写
+    del.ontimeout = function () { doPost(); };
+    del.send();
+
+    function doPost() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', url, true);
+      xhr.setRequestHeader('Content-Type', 'text/plain');
+      xhr.timeout = 25000;
+      xhr.onload = function () {
+        if (xhr.status === 200 || xhr.status === 201) { cb(null); }
+        else { cb('HTTP ' + xhr.status); }
+      };
+      xhr.onerror = function () { cb('网络错误'); };
+      xhr.ontimeout = function () { cb('超时'); };
+      xhr.send(JSON.stringify(obj));
+    }
   }
 
   /* ---------- 抽奖 ---------- */
