@@ -1,0 +1,458 @@
+{
+    "prizes":  [
+                   {
+                       "id":  1,
+                       "name":  "iPhone 17 Pro",
+                       "icon":  "📱",
+                       "tier":  "特等奖",
+                       "color":  "#ffd700",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  2,
+                       "name":  "AirPods 4",
+                       "icon":  "🎧",
+                       "tier":  "一等奖",
+                       "color":  "#ff5d5d",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  3,
+                       "name":  "索尼 WH-1000XM5",
+                       "icon":  "🎧",
+                       "tier":  "一等奖",
+                       "color":  "#ff5d5d",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  4,
+                       "name":  "Apple Watch SE",
+                       "icon":  "⌚",
+                       "tier":  "二等奖",
+                       "color":  "#a855f7",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  5,
+                       "name":  "小米手环 9",
+                       "icon":  "⌚",
+                       "tier":  "二等奖",
+                       "color":  "#a855f7",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  6,
+                       "name":  "Keychron 机械键盘",
+                       "icon":  "⌨️",
+                       "tier":  "二等奖",
+                       "color":  "#a855f7",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  7,
+                       "name":  "JBL 蓝牙音箱",
+                       "icon":  "🔊",
+                       "tier":  "三等奖",
+                       "color":  "#3b82f6",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  8,
+                       "name":  "漫步者 蓝牙音箱",
+                       "icon":  "🔊",
+                       "tier":  "三等奖",
+                       "color":  "#3b82f6",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  9,
+                       "name":  "飞利浦 电动牙刷",
+                       "icon":  "🪥",
+                       "tier":  "三等奖",
+                       "color":  "#3b82f6",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  10,
+                       "name":  "欧乐B 电动牙刷",
+                       "icon":  "🪥",
+                       "tier":  "三等奖",
+                       "color":  "#3b82f6",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  11,
+                       "name":  "Anker 20000mAh 充电宝",
+                       "icon":  "🔋",
+                       "tier":  "三等奖",
+                       "color":  "#3b82f6",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  12,
+                       "name":  "小米 充电宝",
+                       "icon":  "🔋",
+                       "tier":  "三等奖",
+                       "color":  "#3b82f6",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  13,
+                       "name":  "膳魔师 保温杯",
+                       "icon":  "🥤",
+                       "tier":  "四等奖",
+                       "color":  "#10b981",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  14,
+                       "name":  "虎牌 保温杯",
+                       "icon":  "🥤",
+                       "tier":  "四等奖",
+                       "color":  "#10b981",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  15,
+                       "name":  "象印 保温杯",
+                       "icon":  "🥤",
+                       "tier":  "四等奖",
+                       "color":  "#10b981",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  16,
+                       "name":  "乐扣 保温杯",
+                       "icon":  "🥤",
+                       "tier":  "四等奖",
+                       "color":  "#10b981",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  17,
+                       "name":  "自动折叠伞",
+                       "icon":  "☂️",
+                       "tier":  "四等奖",
+                       "color":  "#10b981",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  18,
+                       "name":  "胶囊雨伞",
+                       "icon":  "☂️",
+                       "tier":  "四等奖",
+                       "color":  "#10b981",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  19,
+                       "name":  "长柄雨伞",
+                       "icon":  "☂️",
+                       "tier":  "四等奖",
+                       "color":  "#10b981",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  20,
+                       "name":  "反向伞",
+                       "icon":  "☂️",
+                       "tier":  "四等奖",
+                       "color":  "#10b981",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  21,
+                       "name":  "陶瓷马克杯 A",
+                       "icon":  "☕",
+                       "tier":  "五等奖",
+                       "color":  "#f59e0b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  22,
+                       "name":  "陶瓷马克杯 B",
+                       "icon":  "☕",
+                       "tier":  "五等奖",
+                       "color":  "#f59e0b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  23,
+                       "name":  "陶瓷马克杯 C",
+                       "icon":  "☕",
+                       "tier":  "五等奖",
+                       "color":  "#f59e0b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  24,
+                       "name":  "陶瓷马克杯 D",
+                       "icon":  "☕",
+                       "tier":  "五等奖",
+                       "color":  "#f59e0b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  25,
+                       "name":  "陶瓷马克杯 E",
+                       "icon":  "☕",
+                       "tier":  "五等奖",
+                       "color":  "#f59e0b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  26,
+                       "name":  "磁吸手机支架",
+                       "icon":  "📲",
+                       "tier":  "五等奖",
+                       "color":  "#f59e0b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  27,
+                       "name":  "折叠手机支架",
+                       "icon":  "📲",
+                       "tier":  "五等奖",
+                       "color":  "#f59e0b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  28,
+                       "name":  "车载手机支架",
+                       "icon":  "📲",
+                       "tier":  "五等奖",
+                       "color":  "#f59e0b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  29,
+                       "name":  "桌面手机支架",
+                       "icon":  "📲",
+                       "tier":  "五等奖",
+                       "color":  "#f59e0b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  30,
+                       "name":  "床头手机支架",
+                       "icon":  "📲",
+                       "tier":  "五等奖",
+                       "color":  "#f59e0b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  31,
+                       "name":  "金属钥匙扣 A",
+                       "icon":  "🔑",
+                       "tier":  "六等奖",
+                       "color":  "#64748b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  32,
+                       "name":  "金属钥匙扣 B",
+                       "icon":  "🔑",
+                       "tier":  "六等奖",
+                       "color":  "#64748b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  33,
+                       "name":  "皮质钥匙扣 C",
+                       "icon":  "🔑",
+                       "tier":  "六等奖",
+                       "color":  "#64748b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  34,
+                       "name":  "亚克力钥匙扣 D",
+                       "icon":  "🔑",
+                       "tier":  "六等奖",
+                       "color":  "#64748b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  35,
+                       "name":  "毛绒钥匙扣 E",
+                       "icon":  "🔑",
+                       "tier":  "六等奖",
+                       "color":  "#64748b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  36,
+                       "name":  "冰箱贴 A",
+                       "icon":  "🧲",
+                       "tier":  "六等奖",
+                       "color":  "#64748b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  37,
+                       "name":  "冰箱贴 B",
+                       "icon":  "🧲",
+                       "tier":  "六等奖",
+                       "color":  "#64748b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  38,
+                       "name":  "冰箱贴 C",
+                       "icon":  "🧲",
+                       "tier":  "六等奖",
+                       "color":  "#64748b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  39,
+                       "name":  "冰箱贴 D",
+                       "icon":  "🧲",
+                       "tier":  "六等奖",
+                       "color":  "#64748b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  40,
+                       "name":  "冰箱贴 E",
+                       "icon":  "🧲",
+                       "tier":  "六等奖",
+                       "color":  "#64748b",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  41,
+                       "name":  "贴纸包 A",
+                       "icon":  "🏷️",
+                       "tier":  "七等奖",
+                       "color":  "#94a3b8",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  42,
+                       "name":  "贴纸包 B",
+                       "icon":  "🏷️",
+                       "tier":  "七等奖",
+                       "color":  "#94a3b8",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  43,
+                       "name":  "贴纸包 C",
+                       "icon":  "🏷️",
+                       "tier":  "七等奖",
+                       "color":  "#94a3b8",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  44,
+                       "name":  "贴纸包 D",
+                       "icon":  "🏷️",
+                       "tier":  "七等奖",
+                       "color":  "#94a3b8",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  45,
+                       "name":  "贴纸包 E",
+                       "icon":  "🏷️",
+                       "tier":  "七等奖",
+                       "color":  "#94a3b8",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  46,
+                       "name":  "贴纸包 F",
+                       "icon":  "🏷️",
+                       "tier":  "七等奖",
+                       "color":  "#94a3b8",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  47,
+                       "name":  "贴纸包 G",
+                       "icon":  "🏷️",
+                       "tier":  "七等奖",
+                       "color":  "#94a3b8",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  48,
+                       "name":  "贴纸包 H",
+                       "icon":  "🏷️",
+                       "tier":  "七等奖",
+                       "color":  "#94a3b8",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  49,
+                       "name":  "贴纸包 I",
+                       "icon":  "🏷️",
+                       "tier":  "七等奖",
+                       "color":  "#94a3b8",
+                       "stock":  1,
+                       "sent":  0
+                   },
+                   {
+                       "id":  50,
+                       "name":  "贴纸包 J",
+                       "icon":  "🏷️",
+                       "tier":  "七等奖",
+                       "color":  "#94a3b8",
+                       "stock":  1,
+                       "sent":  0
+                   }
+               ],
+    "records":  [
+
+                ],
+    "updated":  "2026-11-04 23:14:23"
+}
