@@ -10,6 +10,7 @@
 
   /* ---------- 测试模式开关 ---------- */
   var FREE = /[?&]free=1/.test(location.search);   // 无限次抽（仅测试用）
+  var SHOW_PRIZES = /[?&]show=1/.test(location.search);  // 显示奖品明细（管理员查看用）
 
   // 测试模式用独立数据，绝不影响正式奖池
   var STATE_KEY = FREE ? 'bbstate_test' : 'bbstate';
@@ -406,10 +407,13 @@
         d.className = 'tile' + (isGone ? ' gone' : '');
         d.setAttribute('data-id', p.id);
         d.setAttribute('data-unit', i);
-        d.innerHTML =
-          '<i class="tk" style="background:' + (p.color || '#8b94c2') + '"></i>' +
-          '<span class="ic">' + (p.icon || '🎁') + '</span>' +
-          '<span class="nm">' + (p.name || '') + '</span>';
+        // 默认不显示奖品内容，只显示一个"？"，保持神秘感
+        // 需要查看奖品明细时，网址加 ?show=1
+        d.innerHTML = SHOW_PRIZES
+          ? '<i class="tk" style="background:' + (p.color || '#8b94c2') + '"></i>' +
+            '<span class="ic">' + (p.icon || '🎁') + '</span>' +
+            '<span class="nm">' + (p.name || '') + '</span>'
+          : '<span class="q">?</span>';
         wall.appendChild(d);
       }
     });
