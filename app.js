@@ -164,8 +164,11 @@
         try { localStorage.setItem('bx_result', JSON.stringify(rec)); } catch (e) {}
         state = newState;
         render({ prizes: prizes, records: newState.records });
-        var t = document.querySelector('.tile[data-id="' + rec.prizeId + '"]');
-        if (t) { t.classList.remove('gone'); t.classList.add('win'); }
+        // 高亮刚抽走的那一格（该奖品里第一个还没抽的格子）
+        var tiles = document.querySelectorAll('.tile[data-id="' + rec.prizeId + '"]');
+        for (var q = 0; q < tiles.length; q++) {
+          if (!tiles[q].classList.contains('gone')) { tiles[q].classList.add('win'); break; }
+        }
         finish(rec);
       });
     });
@@ -241,24 +244,30 @@
     var prizes = st.prizes || [];
     var wall = $('#wall');
     wall.innerHTML = '';
-    prizes.forEach(function (p) {
-      var left = (p.stock || 0) - (p.sent || 0);
-      var d = document.createElement('div');
-      d.className = 'tile' + (left <= 0 ? ' gone' : '');
-      d.setAttribute('data-id', p.id);
-      d.innerHTML = '<i class="tk" style="background:' + (p.color || '#8b94c2') + '"></i>' +
-        '<span class="cnt">' + (left > 0 ? left : 0) + '</span>' +
-        '<span class="ic">' + (p.icon || '🎁') + '</span>' +
-        '<span class="nm">' + (p.name || '') + '</span>';
-      wall.appendChild(d);
-    });
-    // 进度按"总份数"统计，不是按奖品项数
+
     var totalQty = 0, remainQty = 0;
+
     prizes.forEach(function (p) {
-      var s = p.stock || 0, u = p.sent || 0;
-      totalQty += s;
-      remainQty += Math.max(0, s - u);
+      var stock = p.stock || 0;
+      var sent  = p.sent || 0;
+      totalQty  += stock;
+      remainQty += Math.max(0, stock - sent);
+
+      // 按份数展开：一份 = 一个格子，抽走的那几份标记为"已抽"
+      for (var i = 0; i < stock; i++) {
+        var isGone = (i < sent);
+        var d = document.createElement('div');
+        d.className = 'tile' + (isGone ? ' gone' : '');
+        d.setAttribute('data-id', p.id);
+        d.setAttribute('data-unit', i);
+        d.innerHTML =
+          '<i class="tk" style="background:' + (p.color || '#8b94c2') + '"></i>' +
+          '<span class="ic">' + (p.icon || '🎁') + '</span>' +
+          '<span class="nm">' + (p.name || '') + '</span>';
+        wall.appendChild(d);
+      }
     });
+
     $('#remainCount').textContent = remainQty;
     $('#totalCount').textContent = totalQty;
     $('#meterFill').style.width = (totalQty ? Math.max(2, remainQty / totalQty * 100) : 2) + '%';
