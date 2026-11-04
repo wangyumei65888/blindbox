@@ -14,6 +14,29 @@
   // 测试模式用独立数据，绝不影响正式奖池
   var STATE_KEY = FREE ? 'bbstate_test' : 'bbstate';
 
+  // 内置奖池（云端数据失效时自动重建，保证活动不中断）
+  var DEFAULT_PRIZES = [
+    { id: 1,  name: '免单一次（下次使用）', icon: '🎫', tier: '一等奖', color: '#ffd700', stock: 1 },
+    { id: 2,  name: '50元抵扣券',        icon: '🎟️', tier: '二等奖', color: '#ff5d5d', stock: 1 },
+    { id: 3,  name: '公仔娃娃 A',        icon: '🧸', tier: '三等奖', color: '#a855f7', stock: 1 },
+    { id: 4,  name: '公仔娃娃 B',        icon: '🧸', tier: '三等奖', color: '#a855f7', stock: 1 },
+    { id: 5,  name: '8.88现金红包',      icon: '🧧', tier: '',       color: '#3b82f6', stock: 3 },
+    { id: 6,  name: '6.66现金红包',      icon: '🧧', tier: '',       color: '#10b981', stock: 3 },
+    { id: 7,  name: '魔芋爽',            icon: '🌶️', tier: '',       color: '#f59e0b', stock: 5 },
+    { id: 8,  name: '劲仔小鱼',          icon: '🐟', tier: '',       color: '#f59e0b', stock: 5 },
+    { id: 9,  name: '牛奶巧克力味零食',   icon: '🍫', tier: '',       color: '#64748b', stock: 10 },
+    { id: 10, name: '谢谢参与',          icon: '🎈', tier: '',       color: '#94a3b8', stock: 20 }
+  ];
+  function freshPool() {
+    return {
+      prizes: DEFAULT_PRIZES.map(function (p) {
+        return { id: p.id, name: p.name, icon: p.icon, tier: p.tier, color: p.color, stock: p.stock, sent: 0 };
+      }),
+      records: [],
+      updated: new Date().toISOString()
+    };
+  }
+
   /* ---------- 云端读写 ---------- */
   function kvRead(cb) {
     var xhr = new XMLHttpRequest();
@@ -327,27 +350,6 @@
     $('#card').classList.remove('show');
   });
 
-  // 测试池首次使用时，从正式奖池复制一份结构（全部 sent=0），不动正式数据
-  function initTestPool(cb) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', KV_BASE + '/bbstate?t=' + Date.now(), true);
-    xhr.timeout = 20000;
-    xhr.onload = function () {
-      if (xhr.status !== 200) { cb('无法读取正式奖池'); return; }
-      try {
-        var base = JSON.parse(xhr.responseText);
-        var prizes = norm(base).map(function (p) {
-          return { id: p.id, name: p.name, icon: p.icon, tier: p.tier, color: p.color, stock: p.stock, sent: 0 };
-        });
-        var st = { prizes: prizes, records: [], updated: new Date().toISOString() };
-        kvWrite(st, function (e) { cb(e, st); });
-      } catch (e) { cb('解析正式奖池失败'); }
-    };
-    xhr.onerror = function () { cb('网络错误'); };
-    xhr.ontimeout = function () { cb('超时'); };
-    xhr.send();
-  }
-
   function onLoaded(st) {
     render({ prizes: norm(st) });
     var uid = getUid();
@@ -372,10 +374,12 @@
 
   $('#tip').textContent = '正在读取奖池...';
   kvRead(function (err, st) {
-    if (err === 'EMPTY' && FREE) {
-      initTestPool(function (e2, st2) {
-        if (e2) { $('#tip').textContent = '测试池初始化失败：' + e2; return; }
-        onLoaded(st2);
+    // 云端数据不存在（过期/被清空）→ 用内置奖池自动重建，活动不中断
+    if (err === 'EMPTY') {
+      var fresh = freshPool();
+      kvWrite(fresh, function (e2) {
+        if (e2) { $('#tip').textContent = '奖池初始化失败：' + e2; return; }
+        onLoaded(fresh);
       });
       return;
     }
