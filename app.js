@@ -1,122 +1,92 @@
-/* 微信扫码盲盒 - GitHub Pages 版（数据存 GitHub 仓库，全局库存唯一） */
+/* 微信扫码盲盒 - 免 Token 版（kvdb.io 存状态） */
 (function () {
   'use strict';
 
-  /* ============ 配置 ============ */
-  var OWNER  = 'wangyumei65888';
-  var REPO   = 'blindbox';
-  var BRANCH = 'main';
-  var STATE_FILE = 'state.json';
-  var TOKEN_KEY  = 'bx_gh_token';
+  var KV_BUCKET = 'WYG27VqQxFx6VAMVShxuTv';
+  var KV_BASE = 'https://kvdb.io/' + KV_BUCKET;
+  var STATE_KEY = 'bbstate';
 
   var $ = function (s) { return document.querySelector(s); };
-  var cfg = null, state = null, stateSha = null, busy = false;
+  var state = null, busy = false;
 
-  /* ============ token 管理 ============ */
-  function getToken() {
-    var t = localStorage.getItem(TOKEN_KEY);
-    if (!t) {
-      t = prompt('首次使用，请粘贴 GitHub Token（只需一次，存在本机）\n\n格式: ghp_xxxxx');
-      if (t) { t = t.trim(); localStorage.setItem(TOKEN_KEY, t); }
-    }
-    return t;
-  }
-
-  /* ============ GitHub API ============ */
-  function ghUrl(p) {
-    return 'https://api.github.com/repos/' + OWNER + '/' + REPO + '/contents/' + p;
-  }
-  function b64encode(str) {
-    return btoa(unescape(encodeURIComponent(str)));
-  }
-  function b64decode(str) {
-    return decodeURIComponent(escape(atob(str.replace(/\s/g, ''))));
-  }
-
-  function ghGet(path, cb) {
+  /* ---------- 云端读写 ---------- */
+  function kvRead(cb) {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', ghUrl(path) + '?ref=' + BRANCH + '&t=' + Date.now(), true);
-    xhr.setRequestHeader('Authorization', 'token ' + getToken());
-    xhr.setRequestHeader('Accept', 'application/vnd.github+json');
+    xhr.open('GET', KV_BASE + '/' + STATE_KEY + '?t=' + Date.now(), true);
     xhr.timeout = 20000;
     xhr.onload = function () {
-      if (xhr.status === 200) {
+      if (xhr.status === 404) { cb('EMPTY'); return; }
+      if (xhr.status !== 200) { cb('HTTP ' + xhr.status); return; }
+      try {
+        var t = xhr.responseText.trim();
+        // kvdb 返回的是 JSON5-ish，直接解析
+        cb(null, JSON.parse(t));
+      } catch (e) {
+        // 尝试宽松修复（key 无引号）
         try {
-          var d = JSON.parse(xhr.responseText);
-          cb(null, JSON.parse(b64decode(d.content)), d.sha);
-        } catch (e) { cb('数据解析失败: ' + e.message); }
-      } else if (xhr.status === 404) {
-        cb('404', null, null);
-      } else if (xhr.status === 401) {
-        localStorage.removeItem(TOKEN_KEY);
-        cb('Token 无效，请重试');
-      } else {
-        cb('HTTP ' + xhr.status);
+          var fixed = xhr.responseText.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:)/g, '$1"$2"$3');
+          cb(null, JSON.parse(fixed));
+        } catch (e2) { cb('解析失败'); }
       }
     };
     xhr.onerror = function () { cb('网络错误'); };
-    xhr.ontimeout = function () { cb('请求超时'); };
+    xhr.ontimeout = function () { cb('超时'); };
     xhr.send();
   }
 
-  function ghPut(path, obj, sha, cb) {
+  function kvWrite(obj, cb) {
     var xhr = new XMLHttpRequest();
-    xhr.open('PUT', ghUrl(path), true);
-    xhr.setRequestHeader('Authorization', 'token ' + getToken());
-    xhr.setRequestHeader('Accept', 'application/vnd.github+json');
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.timeout = 20000;
-    var body = {
-      message: 'draw ' + new Date().toISOString(),
-      content: b64encode(JSON.stringify(obj)),
-      branch: BRANCH
-    };
-    if (sha) body.sha = sha;
+    xhr.open('POST', KV_BASE + '/' + STATE_KEY, true);
+    xhr.setRequestHeader('Content-Type', 'text/plain');
+    xhr.timeout = 25000;
     xhr.onload = function () {
-      if (xhr.status === 200 || xhr.status === 201) {
-        try { cb(null, JSON.parse(xhr.responseText).content.sha); }
-        catch (e) { cb(null, null); }
-      } else if (xhr.status === 409) {
-        cb('conflict');
-      } else {
-        cb('HTTP ' + xhr.status + ' ' + xhr.responseText.slice(0, 120));
-      }
+      if (xhr.status === 200 || xhr.status === 201) { cb(null); }
+      else { cb('HTTP ' + xhr.status); }
     };
     xhr.onerror = function () { cb('网络错误'); };
-    xhr.ontimeout = function () { cb('请求超时'); };
-    xhr.send(JSON.stringify(body));
+    xhr.ontimeout = function () { cb('超时'); };
+    xhr.send(JSON.stringify(obj));
   }
 
-  /* ============ 抽奖逻辑 ============ */
+  /* ---------- 抽奖 ---------- */
   function pickPrize(st) {
     var pool = [], total = 0;
-    st.prizes.forEach(function (p) {
-      var left = p.stock - p.sent;
-      if (left > 0) {
-        var w = p.weight || 1;
-        pool.push({ p: p, w: w });
-        total += w;
-      }
+    var list = st.prizes || st.p || [];
+    list.forEach(function (p) {
+      var left = (p.stock != null ? p.stock : p.s) - (p.sent || 0);
+      if (left > 0) { pool.push(p); total += 1; }
     });
     if (!total) return null;
-    var roll = Math.random() * total, acc = 0;
-    for (var i = 0; i < pool.length; i++) {
-      acc += pool[i].w;
-      if (roll < acc) return pool[i].p;
-    }
-    return pool[pool.length - 1].p;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function norm(st) {
+    // 兼容 kvdb 返回的简写字段
+    var list = st.prizes || st.p || [];
+    return list.map(function (p, i) {
+      return {
+        id: p.id != null ? p.id : (p.i != null ? p.i : i + 1),
+        name: p.name || p.n || '',
+        icon: p.icon || p.ic || '🎁',
+        tier: p.tier || p.t || '',
+        color: p.color || p.c || '#8b94c2',
+        stock: p.stock != null ? p.stock : (p.s != null ? p.s : 1),
+        sent: p.sent || 0
+      };
+    });
   }
 
   function genCode(uid) {
-    var A = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ', h = 0, out = '';
-    for (var i = 0; i < uid.length; i++) { h = (h * 31 + uid.charCodeAt(i)) >>> 0; }
-    for (var j = 0; j < 6; j++) { out += A[(h >>> (j * 4)) % A.length]; }
+    var A = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ', h = 5381;
+    for (var i = 0; i < uid.length; i++) h = ((h << 5) + h + uid.charCodeAt(i)) >>> 0;
+    var out = '';
+    for (var j = 0; j < 6; j++) { out += A[h % A.length]; h = Math.floor(h / A.length) + 7; }
     return 'BX' + out;
   }
 
   function getUid() {
     var u = localStorage.getItem('bx_uid');
-    if (!u) { u = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10); localStorage.setItem('bx_uid', u); }
+    if (!u) { u = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 9); localStorage.setItem('bx_uid', u); }
     return u;
   }
 
@@ -125,64 +95,63 @@
     busy = true;
     $('#drawBtn').disabled = true;
     var finish = playDraw(function () { busy = false; $('#drawBtn').disabled = false; });
+    var uid = getUid();
 
-    ghGet(STATE_FILE, function (err, st, sha) {
+    // 本机已抽过
+    try {
+      var prev = JSON.parse(localStorage.getItem('bx_result') || 'null');
+      if (prev && prev.uid === uid) { finish(prev); return; }
+    } catch (e) {}
+
+    kvRead(function (err, st) {
       if (err) { finish({ __error: true, msg: err }); return; }
-      state = st; stateSha = sha;
-      var uid = getUid();
+      var prizes = norm(st);
 
-      // 已抽过
-      var prev = (st.records || []).filter(function (r) { return r.uid === uid; })[0];
-      if (prev) { finish(prev); return; }
-
-      var prize = pickPrize(st);
-      var code = genCode(uid + prize?.id + Date.now());
-      var rec = prize ? {
-        uid: uid, code: code, prizeId: prize.id, name: prize.name,
-        icon: prize.icon, tier: prize.tier, color: prize.color,
-        time: new Date().toLocaleString('zh-CN')
-      } : { uid: uid, code: code, prizeId: 0, name: '谢谢参与', icon: '🎈', tier: '未中奖', color: '#94a3b8', time: new Date().toLocaleString('zh-CN') };
-
-      if (prize) prize.sent = (prize.sent || 0) + 1;
-      st.records = (st.records || []).concat([rec]);
-      st.updated = new Date().toISOString();
-
-      ghPut(STATE_FILE, st, sha, function (e2, newSha) {
-        if (e2 === 'conflict') {
-          // 有人同时抽，重试一次
-          ghGet(STATE_FILE, function (e3, st2, sha2) {
-            if (e3) { finish({ __error: true, msg: '重试失败' }); return; }
-            var p2 = pickPrize(st2);
-            var rec2 = p2 ? { uid: uid, code: code, prizeId: p2.id, name: p2.name, icon: p2.icon, tier: p2.tier, color: p2.color, time: new Date().toLocaleString('zh-CN') }
-                          : { uid: uid, code: code, prizeId: 0, name: '谢谢参与', icon: '🎈', tier: '未中奖', color: '#94a3b8', time: new Date().toLocaleString('zh-CN') };
-            if (p2) p2.sent = (p2.sent || 0) + 1;
-            st2.records = (st2.records || []).concat([rec2]);
-            struct = st2;
-            ghPut(STATE_FILE, st2, sha2, function (e4) {
-              if (e4) { finish({ __error: true, msg: e4 }); return; }
-              applyResult(rec2); finish(rec2);
-            });
-          });
-          return;
+      // 云端已抽过
+      var recs = st.records || st.r || [];
+      for (var i = 0; i < recs.length; i++) {
+        if (recs[i].uid === uid) {
+          try { localStorage.setItem('bx_result', JSON.stringify(recs[i])); } catch (e) {}
+          finish(recs[i]); return;
         }
+      }
+
+      var p = pickPrize({ prizes: prizes });
+      var rec = {
+        uid: uid,
+        code: genCode(uid),
+        prizeId: p ? p.id : 0,
+        name: p ? p.name : '谢谢参与',
+        icon: p ? p.icon : '🎈',
+        tier: p ? p.tier : '未中奖',
+        color: p ? p.color : '#94a3b8',
+        time: new Date().toLocaleString('zh-CN')
+      };
+
+      if (p) {
+        for (var k = 0; k < prizes.length; k++) {
+          if (prizes[k].id === p.id) { prizes[k].sent = (prizes[k].sent || 0) + 1; }
+        }
+      }
+      var newState = {
+        prizes: prizes,
+        records: recs.concat([rec]),
+        updated: new Date().toISOString()
+      };
+
+      kvWrite(newState, function (e2) {
         if (e2) { finish({ __error: true, msg: e2 }); return; }
-        stateSha = newSha;
-        applyResult(rec);
+        try { localStorage.setItem('bx_result', JSON.stringify(rec)); } catch (e) {}
+        state = newState;
+        render({ prizes: prizes, records: newState.records });
+        var t = document.querySelector('.tile[data-id="' + rec.prizeId + '"]');
+        if (t) { t.classList.remove('gone'); t.classList.add('win'); }
         finish(rec);
       });
     });
   }
 
-  var struct = null;
-
-  function applyResult(rec) {
-    try { localStorage.setItem('bx_result', JSON.stringify(rec)); } catch (e) {}
-    var t = document.querySelector('.tile[data-id="' + rec.prizeId + '"]');
-    if (t) { t.classList.remove('gone'); t.classList.add('win'); }
-    updateMeter();
-  }
-
-  /* ============ 动画（简化） ============ */
+  /* ---------- 动画 ---------- */
   function playDraw(cb) {
     var overlay = $('#overlay'), box = $('#box'), card = $('#card'),
         loading = $('#loading'), flash = $('#flash'), note = $('#cardNote');
@@ -193,9 +162,8 @@
     loading.classList.add('show');
     flash.classList.remove('go');
     $('#cardCode').textContent = '';
-    note.textContent = '截图保存，找工作人员兑奖';
 
-    var t0 = Date.now(), MIN = 1200, done = false;
+    var t0 = Date.now(), MIN = 1000, done = false;
     return function (payload) {
       if (done) return; done = true;
       var wait = Math.max(0, MIN - (Date.now() - t0));
@@ -213,7 +181,7 @@
             $('#cardName').textContent = '网络开小差了';
             $('#cardCode').textContent = '';
             note.textContent = payload.msg || '请稍后重试';
-          } else if (payload && payload.name && payload.prizeId !== 0) {
+          } else if (payload && payload.prizeId) {
             $('#cardTier').textContent = payload.tier || '恭喜';
             $('#cardTier').style.color = payload.color || '#ffd75e';
             $('#cardIcon').textContent = payload.icon || '🎁';
@@ -230,21 +198,18 @@
           }
           card.classList.add('show');
           cb(payload);
-        }, 380);
+        }, 360);
       }, wait);
     };
   }
 
-  /* ============ 渲染 ============ */
+  /* ---------- 渲染 ---------- */
   function render(st) {
-    state = st;
-    $('#brand').textContent = '扫码开盲盒';
-    $('#headline').textContent = '50 份好礼 · 随机掉落';
-    $('#subline').textContent = '微信扫码 · 每人限抽 1 次';
+    var prizes = st.prizes || [];
     var wall = $('#wall');
     wall.innerHTML = '';
-    st.prizes.forEach(function (p) {
-      var left = p.stock - p.sent;
+    prizes.forEach(function (p) {
+      var left = (p.stock || 0) - (p.sent || 0);
       var d = document.createElement('div');
       d.className = 'tile' + (left <= 0 ? ' gone' : '');
       d.setAttribute('data-id', p.id);
@@ -253,19 +218,14 @@
         '<span class="nm">' + (p.name || '') + '</span>';
       wall.appendChild(d);
     });
-    updateMeter();
-  }
-
-  function updateMeter() {
-    if (!state) return;
-    var total = state.prizes.length, remain = 0;
-    state.prizes.forEach(function (p) { if (p.stock - p.sent > 0) remain++; });
+    var total = prizes.length, remain = 0;
+    prizes.forEach(function (p) { if ((p.stock || 0) - (p.sent || 0) > 0) remain++; });
     $('#remainCount').textContent = remain;
     $('#totalCount').textContent = total;
     $('#meterFill').style.width = Math.max(2, remain / total * 100) + '%';
   }
 
-  /* ============ 彩带 ============ */
+  /* ---------- 彩带 ---------- */
   var cvs = $('#fx'), cx = cvs.getContext('2d'), parts = [], raf = null;
   function sizeCanvas() {
     var dpr = Math.min(devicePixelRatio || 1, 2);
@@ -302,7 +262,7 @@
     if (!parts.length) { cancelAnimationFrame(raf); raf = null; cx.clearRect(0, 0, innerWidth, innerHeight); }
   }
 
-  /* ============ 启动 ============ */
+  /* ---------- 启动 ---------- */
   $('#drawBtn').addEventListener('click', doDraw);
   $('#cardBtn').addEventListener('click', function () {
     $('#overlay').classList.remove('show');
@@ -310,31 +270,23 @@
     $('#card').classList.remove('show');
   });
 
-  // 点标题 5 次可重置本机 token
-  var cnt = 0, tmr = null;
-  $('#brand').addEventListener('click', function () {
-    cnt++;
-    clearTimeout(tmr);
-    tmr = setTimeout(function () { cnt = 0; }, 1500);
-    if (cnt >= 5) { localStorage.removeItem(TOKEN_KEY); alert('Token 已清除，刷新页面重新输入'); cnt = 0; }
-  });
-
-  // 加载状态
   $('#tip').textContent = '正在读取奖池...';
-  ghGet(STATE_FILE, function (err, st, sha) {
+  kvRead(function (err, st) {
     if (err) {
       $('#tip').textContent = '读取失败: ' + err;
       return;
     }
-    stateSha = sha;
-    render(st);
+    render({ prizes: norm(st) });
     var uid = getUid();
-    var mine = (st.records || []).filter(function (r) { return r.uid === uid; })[0];
+    var recs = st.records || st.r || [];
+    var mine = null;
+    for (var i = 0; i < recs.length; i++) { if (recs[i].uid === uid) { mine = recs[i]; break; } }
     if (mine) {
       $('#drawBtn').querySelector('.lbl').textContent = '查看我的奖品';
       $('#tip').textContent = '你已抽过：' + mine.name;
     } else {
-      var remain = st.prizes.filter(function (p) { return p.stock - p.sent > 0; }).length;
+      try { localStorage.removeItem('bx_result'); } catch (e) {}
+      var remain = norm(st).filter(function (p) { return p.stock - p.sent > 0; }).length;
       $('#tip').textContent = '还剩 ' + remain + ' 份，点击开盒';
     }
   });
