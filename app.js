@@ -239,15 +239,21 @@
       d.className = 'tile' + (left <= 0 ? ' gone' : '');
       d.setAttribute('data-id', p.id);
       d.innerHTML = '<i class="tk" style="background:' + (p.color || '#8b94c2') + '"></i>' +
+        '<span class="cnt">' + (left > 0 ? left : 0) + '</span>' +
         '<span class="ic">' + (p.icon || '🎁') + '</span>' +
         '<span class="nm">' + (p.name || '') + '</span>';
       wall.appendChild(d);
     });
-    var total = prizes.length, remain = 0;
-    prizes.forEach(function (p) { if ((p.stock || 0) - (p.sent || 0) > 0) remain++; });
-    $('#remainCount').textContent = remain;
-    $('#totalCount').textContent = total;
-    $('#meterFill').style.width = Math.max(2, remain / total * 100) + '%';
+    // 进度按"总份数"统计，不是按奖品项数
+    var totalQty = 0, remainQty = 0;
+    prizes.forEach(function (p) {
+      var s = p.stock || 0, u = p.sent || 0;
+      totalQty += s;
+      remainQty += Math.max(0, s - u);
+    });
+    $('#remainCount').textContent = remainQty;
+    $('#totalCount').textContent = totalQty;
+    $('#meterFill').style.width = (totalQty ? Math.max(2, remainQty / totalQty * 100) : 2) + '%';
   }
 
   /* ---------- 彩带 ---------- */
